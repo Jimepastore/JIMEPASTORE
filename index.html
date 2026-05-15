@@ -259,17 +259,11 @@ body{background:var(--gris-bg);min-height:100vh}
   <div class="hdr">
     <img id="app-logo" class="hdr-logo" src="" alt="JimePaStore">
     <div class="hdr-spacer"></div>
-    <div class="hdr-redes">
-      <button class="btn-ig" onclick="sw('redes',3)">📸 Instagram</button>
-      <button class="btn-fb" onclick="sw('redes',3)">📘 Facebook</button>
-      <button class="btn-logout" onclick="doLogout()">Salir</button>
-    </div>
+<div class="hdr-redes"></div>
   </div>
   <div class="nav">
     <button class="ntab active" onclick="sw('catalogo',0)">🛍 Catálogo</button>
     <button class="ntab" onclick="sw('carrito',1)">🛒 Carrito (<span id="cc">0</span>)</button>
-    <button class="ntab" onclick="checkAdmin()">⚙️ Admin</button>
-    <button class="ntab" onclick="sw('redes',3)">📱 Redes Sociales</button>
   </div>
   <div class="main">
 
@@ -484,9 +478,9 @@ function fil(brand,el){
 }
 function getImg(p){
   const url=p.img||IMGS[p.name];
-  const fb=`<div class="pfallback">${EMO[p.brand]||'📱'}</div>`;
-  if(url)return`<img src="${url}" style="width:100%;height:100%;object-fit:contain;padding:10px" onerror="this.outerHTML='${fb}'" loading="lazy" alt="${p.name}">`;
-  return fb;
+  const emo=EMO[p.brand]||'📱';
+  if(url)return`<img src="${url}" style="width:100%;height:100%;object-fit:contain;padding:10px" onload="this.style.opacity=1" onerror="this.style.display='none';this.parentNode.innerHTML='<div class=pfallback>'+emo+'</div>'" loading="lazy" alt="${p.name}">`;
+  return `<div class="pfallback">${emo}</div>`;
 }
 function rc(){
   const q=document.getElementById('sq').value.toLowerCase();
@@ -517,7 +511,8 @@ function rCart(){
     const p=products.find(x=>x.id==id);if(!p)return'';
     sub+=p.price*qty;
     const url=p.img||IMGS[p.name];
-    const th=url?`<img class="cthumb" src="${url}" onerror="this.style.display='none'" loading="lazy" alt="${p.name}">`:`<div class="cthumb-fb">${EMO[p.brand]||'📱'}</div>`;
+    const emo2=EMO[p.brand]||'📱';
+    const th=url?`<img class="cthumb" src="${url}" onerror="this.style.display='none'" loading="lazy" alt="${p.name}">`:`<div class="cthumb-fb">${emo2}</div>`;
     return`<div class="citem">${th}<div class="cinfo"><div class="cname">${p.brand} ${p.name}</div><div class="cprice">$${p.price} c/u · <strong style="color:var(--turquesa-oscuro)">$${(p.price*qty).toLocaleString()}</strong></div></div><div class="qc"><button class="qbtn" onclick="cq(${id},-1)">−</button><span class="qn">${qty}</span><button class="qbtn" onclick="cq(${id},1)">+</button></div><button class="rbtn" onclick="ri(${id})">🗑</button></div>`;
   }).join('');
   const iva=sub*.15,tot=sub+iva;
@@ -575,7 +570,31 @@ function toast(msg){
   clearTimeout(tt);tt=setTimeout(()=>el.classList.remove('show'),3000);
 }
 // Inicializar catálogo al cargar
-window.addEventListener('DOMContentLoaded', function(){ rc(); uh(); });
+window.addEventListener('DOMContentLoaded', function(){ 
+  rc(); uh();
+  // Acceso secreto: presiona Ctrl + Shift + A
+  let clickCount = 0, clickTimer;
+  document.getElementById('app-logo').style.cursor = 'pointer';
+  document.getElementById('app-logo').addEventListener('click', function(){
+    clickCount++;
+    clearTimeout(clickTimer);
+    clickTimer = setTimeout(()=>{ clickCount=0; }, 1500);
+    if(clickCount >= 5){
+      clickCount = 0;
+      const clave = prompt('Contraseña admin:');
+      if(clave === '1234'){ sw('admin', 2); toast('✓ Bienvenida al panel admin'); }
+      else if(clave !== null){ toast('✗ Contraseña incorrecta'); }
+    }
+  });
+  document.addEventListener('keydown', function(e){
+    if(e.ctrlKey && e.shiftKey && e.key === 'A'){
+      e.preventDefault();
+      const clave = prompt('Contraseña admin:');
+      if(clave === '1234'){ sw('admin', 2); toast('✓ Bienvenida al panel admin'); }
+      else if(clave !== null){ toast('✗ Contraseña incorrecta'); }
+    }
+  });
+});
 </script>
 </body>
 </html>
